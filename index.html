@@ -23,7 +23,6 @@
     .img-display-area { position: relative; width: 100%; height: 68vh; min-height: 450px; background: #050507; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .img-display-area img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
     
-    /* Banners per lo stato del Boss */
     .found-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #041f0c; font-weight: 900; padding: 10px 25px; border-radius: 40px; font-size: 1.3em; letter-spacing: 1px; z-index: 10; box-shadow: 0 0 25px #2ecc71; text-transform: uppercase; border: 2px solid #ffffff; text-align: center; }
     .found-banner .timer-badge { display: block; font-size: 0.85em; font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.3); color: #ffffff; padding: 3px 12px; border-radius: 12px; margin-top: 4px; letter-spacing: 1px; }
     
@@ -82,13 +81,11 @@
     </header>
 
     <div class="viewer-card" id="viewerCard">
-      <!-- Banner Trovato -->
       <div class="found-banner">
         <span id="uiFoundText">Boss Trovato In Questa Zona ✓</span>
         <span class="timer-badge" id="timerDisplay">Respawn: 60:00</span>
       </div>
 
-      <!-- Banner Respawn Scaduto -->
       <div class="respawn-banner" id="uiRespawnBanner">
         🔔 Boss Ricomparso in questa zona!
       </div>
@@ -119,6 +116,8 @@
   </div>
 
   <script>
+    const STORAGE_PREFIX = 'bt_';
+
     const i18n = {
       it: {
         zoneLabel: "Seleziona Zona:",
@@ -198,7 +197,7 @@
 
     let currentZoneId = zones[0].id;
     let currentImgIndex = 0;
-    let currentLang = localStorage.getItem('app_lang') || 'it';
+    let currentLang = localStorage.getItem(STORAGE_PREFIX + 'lang') || 'it';
     const ONE_HOUR_MS = 60 * 60 * 1000;
 
     function init() {
@@ -206,7 +205,6 @@
       populateZoneSelect();
       renderViewer();
 
-      // Controllo constante dei timer indipendenti ogni secondo
       setInterval(checkAndTickTimers, 1000);
 
       document.addEventListener('keydown', (e) => {
@@ -218,7 +216,7 @@
 
     function toggleLanguage() {
       currentLang = currentLang === 'it' ? 'en' : 'it';
-      localStorage.setItem('app_lang', currentLang);
+      localStorage.setItem(STORAGE_PREFIX + 'lang', currentLang);
       updateLanguageUI();
       populateZoneSelect();
       renderViewer();
@@ -239,7 +237,7 @@
     }
 
     function getZoneData(zoneId) {
-      const saved = localStorage.getItem(zoneId);
+      const saved = localStorage.getItem(STORAGE_PREFIX + zoneId);
       if (saved) return JSON.parse(saved);
 
       const zoneObj = zones.find(z => z.id === zoneId);
@@ -247,7 +245,7 @@
     }
 
     function saveZoneData(zoneId, data) {
-      localStorage.setItem(zoneId, JSON.stringify(data));
+      localStorage.setItem(STORAGE_PREFIX + zoneId, JSON.stringify(data));
     }
 
     function populateZoneSelect() {
@@ -337,10 +335,9 @@
       zones.forEach(z => {
         const data = getZoneData(z.id);
         if (data.found && data.expiresAt && now >= data.expiresAt) {
-          // Timer scaduto per questa specifica zona!
           data.found = false;
           data.expiresAt = null;
-          data.respawned = true; // Imposta lo stato di ricomparsa
+          data.respawned = true;
           saveZoneData(z.id, data);
           stateChanged = true;
         }
@@ -350,7 +347,6 @@
         populateZoneSelect();
         renderViewer();
       } else {
-        // Aggiorna solo il testo del conto alla rovescia corrente se attivo
         const activeData = getZoneData(currentZoneId);
         if (activeData.found && activeData.expiresAt) {
           updateTimerBadgeDisplay(activeData.expiresAt);
@@ -393,11 +389,15 @@
     }
 
     function resetDefaultImages() {
-      localStorage.clear();
+      zones.forEach(z => {
+        localStorage.removeItem(STORAGE_PREFIX + z.id);
+      });
+      localStorage.removeItem(STORAGE_PREFIX + 'lang');
+
       currentImgIndex = 0;
       populateZoneSelect();
       renderViewer();
-      alert(currentLang === 'it' ? 'Foto e dati ripristinati!' : 'Photos and data reset!');
+      alert(currentLang === 'it' ? 'Dati della mappa ripristinati!' : 'Map data reset!');
     }
 
     function changeZone(zoneId) {
@@ -448,12 +448,10 @@
       const data = getZoneData(currentZoneId);
 
       if (data.respawned) {
-        // Pressione per azzerare la notifica di avvenuto respawn
         data.respawned = false;
         data.found = false;
         data.expiresAt = null;
       } else {
-        // Toggle standard tra Trovato / Mancante
         data.found = !data.found;
 
         if (data.found) {
