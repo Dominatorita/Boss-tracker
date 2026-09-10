@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Throne and Liberty - Boss Tracker</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #090a0f; color: #e1e3e6; margin: 0; padding: 15px; }
+    .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; background: #16181f; padding: 12px 20px; border-radius: 8px; border: 1px solid #272a36; }
+    h1 { margin: 0; color: #f39c12; font-size: 1.4em; }
+    .zone-selector { display: flex; align-items: center; gap: 10px; }
+    select { background: #0d0e12; color: #fff; border: 1px solid #343847; padding: 8px 12px; border-radius: 6px; font-size: 1em; cursor: pointer; font-weight: bold; }
+
+    .viewer-card { position: relative; background: #12141a; border: 3px solid #272a36; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s ease; }
+    
+    .img-display-area { position: relative; width: 100%; height: 68vh; min-height: 450px; background: #050507; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .img-display-area img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
+    
+    .found-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #041f0c; font-weight: 900; padding: 12px 35px; border-radius: 40px; font-size: 1.5em; letter-spacing: 2px; z-index: 10; box-shadow: 0 0 25px #2ecc71; text-transform: uppercase; border: 2px solid #ffffff; }
+    .viewer-card.boss-found { border-color: #2ecc71 !important; box-shadow: 0 0 40px rgba(46, 204, 113, 0.45); }
+    .viewer-card.boss-found .found-banner { display: block; }
+    
+    .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.8); color: #f39c12; border: 1px solid #444; font-size: 2.2em; width: 55px; height: 55px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; transition: 0.2s; user-select: none; }
+    .nav-btn:hover { background: #f39c12; color: #000; border-color: #f39c12; }
+    .nav-btn.prev { left: 20px; }
+    .nav-btn.next { right: 20px; }
+
+    .photo-counter { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.85em; z-index: 5; border: 1px solid #444; pointer-events: none; }
+
+    .control-panel { padding: 15px 20px; background: #16181f; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; border-top: 1px solid #272a36; z-index: 2; }
+    .add-inputs { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; flex: 1; min-width: 300px; }
+    .input-url { flex: 1; min-width: 200px; background: #0d0e12; border: 1px solid #272a36; color: #fff; padding: 9px 12px; border-radius: 6px; font-size: 0.9em; }
+    
+    .btn { background: #2c3e50; color: #fff; border: none; padding: 9px 14px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.2s; white-space: nowrap; }
+    .btn:hover { background: #34495e; }
+    .btn-reset { background: #d35400; color: #fff; }
+    .btn-reset:hover { background: #e67e22; }
+    .btn-toggle-boss { background: #2ecc71; color: #041f0c; font-size: 0.95em; padding: 9px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; white-space: nowrap; }
+    .btn-toggle-boss.found { background: #e74c3c; color: #fff; }
+    .btn-delete { background: #5c2424; color: #ffaaaa; }
+    .btn-delete:hover { background: #822828; }
+    .placeholder-text { color: #8a8f9d; font-size: 1em; text-align: center; line-height: 1.5; padding: 20px; }
+    .error-msg { color: #e74c3c; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <h1>Boss Area Viewer</h1>
+      <div class="zone-selector">
+        <label for="zoneSelect">Seleziona Zona:</label>
+        <select id="zoneSelect" onchange="changeZone(this.value)"></select>
+      </div>
+    </header>
+
+    <div class="viewer-card" id="viewerCard">
+      <div class="found-banner">Boss Trovato In Questa Zona ✓</div>
+      
+      <div class="img-display-area" id="imgDisplayArea">
+        <!-- Contenuto Immagine -->
+      </div>
+
+      <button class="nav-btn prev" onclick="prevZone()" title="Zona Precedente (Tasto ◄)">&#10094;</button>
+      <button class="nav-btn next" onclick="nextZone()" title="Zona Successiva (Tasto ►)">&#10095;</button>
+
+      <div class="control-panel">
+        <div class="add-inputs">
+          <input type="text" id="urlInput" class="input-url" placeholder="Incolla link immagine...">
+          <button class="btn" onclick="addUrlImage()">Aggiungi URL</button>
+          <span style="color:#666;">o</span>
+          <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadLocalImage(event)">
+          <button class="btn" onclick="document.getElementById('fileInput').click()">Carica File</button>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap: wrap;">
+          <button class="btn btn-reset" onclick="resetDefaultImages()">Ripristina Foto Predefinite</button>
+          <button class="btn btn-delete" onclick="deleteCurrentImage()">Elimina Foto</button>
+          <button class="btn-toggle-boss" id="btnToggleBoss" onclick="toggleBossState()">Segna come Trovato</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const zonesList = [
+      { num: 1, name: '1. Akidu Valley' },
+      { num: 2, name: '2. Manawastes' },
+      { num: 3, name: '3. Daybreak Shore' },
+      { num: 4, name: '4. The Raging Wilds' },
+      { num: 5, name: '5. Abandoned Stonemason Town' },
+      { num: 6, name: '6. Monolith Wastelands' },
+      { num: 7, name: '7. Sandworm Lair' },
+      { num: 8, name: '8. Nesting Grounds' },
+      { num: 9, name: '9. Urstella Fields' },
+      { num: 10, name: '10. Carmine Forest' },
+      { num: 11, name: '11. Shattered Temple' },
+      { num: 12, name: '12. Ruins of Turayne' },
+      { num: 13, name: '13. Fonos Basin' },
+      { num: 14, name: '14. Swamp of Silence' },
+      { num: 15, name: '15. Black Anvil Forge' },
+      { num: 16, name: '16. Crimson Mansion' },
+      { num: 17, name: '17. Bercant Manor' },
+      { num: 18, name: "18. Quietis's Demesne" },
+      { num: 19, name: '19. Grayclaw Forest' }
+    ];
+
+    const zones = zonesList.map(z => ({
+      id: `zone_${z.num}`,
+      name: z.name,
+      num: z.num,
+      defaultImages: [
+        `img/${z.num}.jpg`,
+        `img/${z.num}.png`,
+        `img/${z.num}.jpeg`,
+        `img/${z.num}`
+      ]
+    }));
+
+    let currentZoneId = zones[0].id;
+    let currentImgIndex = 0;
+
+    function init() {
+      const select = document.getElementById('zoneSelect');
+      select.innerHTML = zones.map(z => `<option value="${z.id}">${z.name}</option>`).join('');
+      renderViewer();
+
+      document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+        if (e.key === 'ArrowLeft') prevZone();
+        if (e.key === 'ArrowRight') nextZone();
+      });
+    }
+
+    function getZoneData(zoneId) {
+      const saved = localStorage.getItem(zoneId);
+      if (saved) return JSON.parse(saved);
+
+      const zoneObj = zones.find(z => z.id === zoneId);
+      return { images: [...zoneObj.defaultImages], found: false };
+    }
+
+    function saveZoneData(zoneId, data) {
+      localStorage.setItem(zoneId, JSON.stringify(data));
+    }
+
+    function renderViewer() {
+      const data = getZoneData(currentZoneId);
+      const card = document.getElementById('viewerCard');
+      const imgArea = document.getElementById('imgDisplayArea');
+      const toggleBtn = document.getElementById('btnToggleBoss');
+      const currentZoneIndex = zones.findIndex(z => z.id === currentZoneId);
+
+      if (data.found) {
+        card.classList.add('boss-found');
+        toggleBtn.textContent = 'Segna come Mancante';
+        toggleBtn.classList.add('found');
+      } else {
+        card.classList.remove('boss-found');
+        toggleBtn.textContent = 'Segna Boss come Trovato';
+        toggleBtn.classList.remove('found');
+      }
+
+      if (data.images && data.images.length > 0) {
+        if (currentImgIndex >= data.images.length) currentImgIndex = data.images.length - 1;
+        if (currentImgIndex < 0) currentImgIndex = 0;
+
+        imgArea.innerHTML = `
+          <img src="${data.images[currentImgIndex]}" 
+               alt="Mappa Area" 
+               onerror="tryNextFallbackExtension(this)">
+          <div class="photo-counter">Zona ${currentZoneIndex + 1} di ${zones.length} — ${zones[currentZoneIndex].name} (Usa frecce ◄ ►)</div>
+        `;
+      } else {
+        imgArea.innerHTML = `
+          <div class="placeholder-text">Nessuna foto presente per questa zona.<br>Aggiungi un URL o carica un file dal dispositivo.</div>
+          <div class="photo-counter">Zona ${currentZoneIndex + 1} di ${zones.length} — ${zones[currentZoneIndex].name}</div>
+        `;
+      }
+    }
+
+    function prevZone() {
+      const currentIndex = zones.findIndex(z => z.id === currentZoneId);
+      const newIndex = (currentIndex - 1 + zones.length) % zones.length;
+      currentZoneId = zones[newIndex].id;
+      document.getElementById('zoneSelect').value = currentZoneId;
+      currentImgIndex = 0;
+      renderViewer();
+    }
+
+    function nextZone() {
+      const currentIndex = zones.findIndex(z => z.id === currentZoneId);
+      const newIndex = (currentIndex + 1) % zones.length;
+      currentZoneId = zones[newIndex].id;
+      document.getElementById('zoneSelect').value = currentZoneId;
+      currentImgIndex = 0;
+      renderViewer();
+    }
+
+    function tryNextFallbackExtension(imgElem) {
+      const data = getZoneData(currentZoneId);
+      if (data.images.length > 1 && currentImgIndex < data.images.length - 1) {
+        data.images.splice(currentImgIndex, 1);
+        saveZoneData(currentZoneId, data);
+        renderViewer();
+      } else {
+        imgElem.style.display = 'none';
+        const imgArea = document.getElementById('imgDisplayArea');
+        const errDiv = document.createElement('div');
+        errDiv.className = 'placeholder-text error-msg';
+        errDiv.innerHTML = `⚠️ Immagine non trovata nella cartella "img/".<br>Verifica che il file si chiami esattamente con il numero della zona (es. 1.jpg, 2.jpg) dentro la cartella img.`;
+        imgArea.prepend(errDiv);
+      }
+    }
+
+    function resetDefaultImages() {
+      localStorage.clear();
+      currentImgIndex = 0;
+      renderViewer();
+      alert('Foto predefinite ripristinate!');
+    }
+
+    function changeZone(zoneId) {
+      currentZoneId = zoneId;
+      currentImgIndex = 0;
+      renderViewer();
+    }
+
+    function addUrlImage() {
+      const urlInput = document.getElementById('urlInput');
+      const val = urlInput.value.trim();
+      if (!val) return;
+
+      const data = getZoneData(currentZoneId);
+      data.images.push(val);
+      saveZoneData(currentZoneId, data);
+      
+      currentImgIndex = data.images.length - 1;
+      urlInput.value = '';
+      renderViewer();
+    }
+
+    function uploadLocalImage(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const data = getZoneData(currentZoneId);
+        data.images.push(evt.target.result);
+        saveZoneData(currentZoneId, data);
+        currentImgIndex = data.images.length - 1;
+        renderViewer();
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function deleteCurrentImage() {
+      const data = getZoneData(currentZoneId);
+      if (data.images.length === 0) return;
+
+      data.images.splice(currentImgIndex, 1);
+      saveZoneData(currentZoneId, data);
+      renderViewer();
+    }
+
+    function toggleBossState() {
+      const data = getZoneData(currentZoneId);
+      data.found = !data.found;
+      saveZoneData(currentZoneId, data);
+      renderViewer();
+    }
+
+    init();
+  </script>
+</body>
+</html>
