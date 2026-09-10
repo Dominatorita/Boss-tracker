@@ -8,20 +8,38 @@
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #090a0f; color: #e1e3e6; margin: 0; padding: 15px; }
     .container { max-width: 1400px; margin: 0 auto; display: flex; flex-direction: column; gap: 15px; }
     
-    header { display: flex; justify-content: space-between; align-items: center; background: #16181f; padding: 12px 20px; border-radius: 8px; border: 1px solid #272a36; }
+    header { display: flex; justify-content: space-between; align-items: center; background: #16181f; padding: 12px 20px; border-radius: 8px; border: 1px solid #272a36; flex-wrap: wrap; gap: 10px; }
     h1 { margin: 0; color: #f39c12; font-size: 1.4em; }
-    .zone-selector { display: flex; align-items: center; gap: 10px; }
-    select { background: #0d0e12; color: #fff; border: 1px solid #343847; padding: 8px 12px; border-radius: 6px; font-size: 1em; cursor: pointer; font-weight: bold; }
+    
+    .header-controls { display: flex; align-items: center; gap: 12px; }
+    .zone-selector { display: flex; align-items: center; gap: 8px; }
+    select { background: #0d0e12; color: #fff; border: 1px solid #343847; padding: 8px 12px; border-radius: 6px; font-size: 1em; cursor: pointer; font-weight: bold; max-width: 350px; }
+
+    .lang-btn { background: #0d0e12; color: #f39c12; border: 1px solid #343847; padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.85em; letter-spacing: 1px; }
+    .lang-btn:hover { background: #f39c12; color: #000; border-color: #f39c12; }
 
     .viewer-card { position: relative; background: #12141a; border: 3px solid #272a36; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s ease; }
     
     .img-display-area { position: relative; width: 100%; height: 68vh; min-height: 450px; background: #050507; display: flex; align-items: center; justify-content: center; overflow: hidden; }
     .img-display-area img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
     
-    .found-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #041f0c; font-weight: 900; padding: 12px 35px; border-radius: 40px; font-size: 1.5em; letter-spacing: 2px; z-index: 10; box-shadow: 0 0 25px #2ecc71; text-transform: uppercase; border: 2px solid #ffffff; }
+    /* Banners per lo stato del Boss */
+    .found-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #041f0c; font-weight: 900; padding: 10px 25px; border-radius: 40px; font-size: 1.3em; letter-spacing: 1px; z-index: 10; box-shadow: 0 0 25px #2ecc71; text-transform: uppercase; border: 2px solid #ffffff; text-align: center; }
+    .found-banner .timer-badge { display: block; font-size: 0.85em; font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.3); color: #ffffff; padding: 3px 12px; border-radius: 12px; margin-top: 4px; letter-spacing: 1px; }
+    
+    .respawn-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #e67e22; color: #ffffff; font-weight: 900; padding: 12px 30px; border-radius: 40px; font-size: 1.3em; letter-spacing: 1px; z-index: 10; box-shadow: 0 0 30px #e67e22; text-transform: uppercase; border: 2px solid #ffffff; text-align: center; animation: pulse-glow 1.5s infinite alternate; }
+
+    @keyframes pulse-glow {
+      0% { transform: translateX(-50%) scale(1); box-shadow: 0 0 20px #e67e22; }
+      100% { transform: translateX(-50%) scale(1.03); box-shadow: 0 0 40px #e74c3c; background: #e74c3c; }
+    }
+
     .viewer-card.boss-found { border-color: #2ecc71 !important; box-shadow: 0 0 40px rgba(46, 204, 113, 0.45); }
     .viewer-card.boss-found .found-banner { display: block; }
     
+    .viewer-card.boss-respawned { border-color: #e67e22 !important; box-shadow: 0 0 40px rgba(230, 126, 34, 0.6); }
+    .viewer-card.boss-respawned .respawn-banner { display: block; }
+
     .nav-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0, 0, 0, 0.8); color: #f39c12; border: 1px solid #444; font-size: 2.2em; width: 55px; height: 55px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 5; transition: 0.2s; user-select: none; }
     .nav-btn:hover { background: #f39c12; color: #000; border-color: #f39c12; }
     .nav-btn.prev { left: 20px; }
@@ -37,8 +55,11 @@
     .btn:hover { background: #34495e; }
     .btn-reset { background: #d35400; color: #fff; }
     .btn-reset:hover { background: #e67e22; }
+    
     .btn-toggle-boss { background: #2ecc71; color: #041f0c; font-size: 0.95em; padding: 9px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; white-space: nowrap; }
     .btn-toggle-boss.found { background: #e74c3c; color: #fff; }
+    .btn-toggle-boss.respawned { background: #e67e22; color: #fff; }
+
     .btn-delete { background: #5c2424; color: #ffaaaa; }
     .btn-delete:hover { background: #822828; }
     .placeholder-text { color: #8a8f9d; font-size: 1em; text-align: center; line-height: 1.5; padding: 20px; }
@@ -50,34 +71,47 @@
   <div class="container">
     <header>
       <h1>Boss Area Viewer</h1>
-      <div class="zone-selector">
-        <label for="zoneSelect">Seleziona Zona:</label>
-        <select id="zoneSelect" onchange="changeZone(this.value)"></select>
+      
+      <div class="header-controls">
+        <div class="zone-selector">
+          <label for="zoneSelect" id="uiZoneLabel">Seleziona Zona:</label>
+          <select id="zoneSelect" onchange="changeZone(this.value)"></select>
+        </div>
+        <button class="lang-btn" id="langBtn" onclick="toggleLanguage()">EN</button>
       </div>
     </header>
 
     <div class="viewer-card" id="viewerCard">
-      <div class="found-banner">Boss Trovato In Questa Zona ✓</div>
+      <!-- Banner Trovato -->
+      <div class="found-banner">
+        <span id="uiFoundText">Boss Trovato In Questa Zona ✓</span>
+        <span class="timer-badge" id="timerDisplay">Respawn: 60:00</span>
+      </div>
+
+      <!-- Banner Respawn Scaduto -->
+      <div class="respawn-banner" id="uiRespawnBanner">
+        🔔 Boss Ricomparso in questa zona!
+      </div>
       
       <div class="img-display-area" id="imgDisplayArea">
         <!-- Contenuto Immagine -->
       </div>
 
-      <button class="nav-btn prev" onclick="prevZone()" title="Zona Precedente (Tasto ◄)">&#10094;</button>
-      <button class="nav-btn next" onclick="nextZone()" title="Zona Successiva (Tasto ►)">&#10095;</button>
+      <button class="nav-btn prev" onclick="prevZone()" title="Zona Precedente (◄)">&#10094;</button>
+      <button class="nav-btn next" onclick="nextZone()" title="Zona Successiva (►)">&#10095;</button>
 
       <div class="control-panel">
         <div class="add-inputs">
           <input type="text" id="urlInput" class="input-url" placeholder="Incolla link immagine...">
-          <button class="btn" onclick="addUrlImage()">Aggiungi URL</button>
-          <span style="color:#666;">o</span>
+          <button class="btn" id="uiAddUrlBtn" onclick="addUrlImage()">Aggiungi URL</button>
+          <span style="color:#666;" id="uiOrText">o</span>
           <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="uploadLocalImage(event)">
-          <button class="btn" onclick="document.getElementById('fileInput').click()">Carica File</button>
+          <button class="btn" id="uiUploadFileBtn" onclick="document.getElementById('fileInput').click()">Carica File</button>
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap: wrap;">
-          <button class="btn btn-reset" onclick="resetDefaultImages()">Ripristina Foto Predefinite</button>
-          <button class="btn btn-delete" onclick="deleteCurrentImage()">Elimina Foto</button>
+          <button class="btn btn-reset" id="uiResetBtn" onclick="resetDefaultImages()">Ripristina Foto Predefinite</button>
+          <button class="btn btn-delete" id="uiDeleteBtn" onclick="deleteCurrentImage()">Elimina Foto</button>
           <button class="btn-toggle-boss" id="btnToggleBoss" onclick="toggleBossState()">Segna come Trovato</button>
         </div>
       </div>
@@ -85,6 +119,49 @@
   </div>
 
   <script>
+    const i18n = {
+      it: {
+        zoneLabel: "Seleziona Zona:",
+        foundBanner: "Boss Trovato In Questa Zona ✓",
+        respawnBannerText: "🔔 Boss Ricomparso in questa zona!",
+        respawnText: "Respawn in",
+        markFound: "Segna Boss come Trovato",
+        markMissing: "Segna come Mancante",
+        clearRespawn: "Riconferma / Azzera Notifica",
+        placeholderUrl: "Incolla link immagine...",
+        addUrlBtn: "Aggiungi URL",
+        orText: "o",
+        uploadFileBtn: "Carica File",
+        resetBtn: "Ripristina Foto Predefinite",
+        deleteBtn: "Elimina Foto",
+        noPhotos: "Nessuna foto presente per questa zona.<br>Aggiungi un URL o carica un file dal dispositivo.",
+        errorPhoto: "⚠️ Immagine non trovata nella cartella \"img/\".<br>Verifica che il file si chiami esattamente con il numero della zona (es. 1.jpg, 2.jpg) dentro la cartella img.",
+        zoneWord: "Zona",
+        ofWord: "di",
+        langBtnText: "EN"
+      },
+      en: {
+        zoneLabel: "Select Zone:",
+        foundBanner: "Boss Found In This Zone ✓",
+        respawnBannerText: "🔔 Boss Respawned in this zone!",
+        respawnText: "Respawn in",
+        markFound: "Mark Boss as Found",
+        markMissing: "Mark as Missing",
+        clearRespawn: "Acknowledge / Clear Alert",
+        placeholderUrl: "Paste image link...",
+        addUrlBtn: "Add URL",
+        orText: "or",
+        uploadFileBtn: "Upload File",
+        resetBtn: "Reset Default Photos",
+        deleteBtn: "Delete Photo",
+        noPhotos: "No photos available for this zone.<br>Add an image URL or upload a file.",
+        errorPhoto: "⚠️ Image not found in \"img/\" folder.<br>Verify that the file is named with the zone number (e.g. 1.jpg, 2.jpg) inside the img folder.",
+        zoneWord: "Zone",
+        ofWord: "of",
+        langBtnText: "IT"
+      }
+    };
+
     const zonesList = [
       { num: 1, name: '1. Akidu Valley' },
       { num: 2, name: '2. Manawastes' },
@@ -121,11 +198,16 @@
 
     let currentZoneId = zones[0].id;
     let currentImgIndex = 0;
+    let currentLang = localStorage.getItem('app_lang') || 'it';
+    const ONE_HOUR_MS = 60 * 60 * 1000;
 
     function init() {
-      const select = document.getElementById('zoneSelect');
-      select.innerHTML = zones.map(z => `<option value="${z.id}">${z.name}</option>`).join('');
+      updateLanguageUI();
+      populateZoneSelect();
       renderViewer();
+
+      // Controllo constante dei timer indipendenti ogni secondo
+      setInterval(checkAndTickTimers, 1000);
 
       document.addEventListener('keydown', (e) => {
         if (e.target.tagName === 'INPUT') return;
@@ -134,33 +216,86 @@
       });
     }
 
+    function toggleLanguage() {
+      currentLang = currentLang === 'it' ? 'en' : 'it';
+      localStorage.setItem('app_lang', currentLang);
+      updateLanguageUI();
+      populateZoneSelect();
+      renderViewer();
+    }
+
+    function updateLanguageUI() {
+      const t = i18n[currentLang];
+      document.getElementById('uiZoneLabel').textContent = t.zoneLabel;
+      document.getElementById('uiFoundText').textContent = t.foundBanner;
+      document.getElementById('uiRespawnBanner').textContent = t.respawnBannerText;
+      document.getElementById('urlInput').placeholder = t.placeholderUrl;
+      document.getElementById('uiAddUrlBtn').textContent = t.addUrlBtn;
+      document.getElementById('uiOrText').textContent = t.orText;
+      document.getElementById('uiUploadFileBtn').textContent = t.uploadFileBtn;
+      document.getElementById('uiResetBtn').textContent = t.resetBtn;
+      document.getElementById('uiDeleteBtn').textContent = t.deleteBtn;
+      document.getElementById('langBtn').textContent = t.langBtnText;
+    }
+
     function getZoneData(zoneId) {
       const saved = localStorage.getItem(zoneId);
       if (saved) return JSON.parse(saved);
 
       const zoneObj = zones.find(z => z.id === zoneId);
-      return { images: [...zoneObj.defaultImages], found: false };
+      return { images: [...zoneObj.defaultImages], found: false, expiresAt: null, respawned: false };
     }
 
     function saveZoneData(zoneId, data) {
       localStorage.setItem(zoneId, JSON.stringify(data));
     }
 
+    function populateZoneSelect() {
+      const select = document.getElementById('zoneSelect');
+      const now = Date.now();
+
+      select.innerHTML = zones.map(z => {
+        const data = getZoneData(z.id);
+        let statusBadge = "";
+
+        if (data.respawned) {
+          statusBadge = " 🔔 [RICOMPARSO!]";
+        } else if (data.found && data.expiresAt) {
+          const diff = data.expiresAt - now;
+          if (diff > 0) {
+            const mins = Math.floor(diff / 60000);
+            statusBadge = ` ⏳ [${mins}m]`;
+          }
+        }
+
+        return `<option value="${z.id}">${z.name}${statusBadge}</option>`;
+      }).join('');
+
+      select.value = currentZoneId;
+    }
+
     function renderViewer() {
+      const t = i18n[currentLang];
       const data = getZoneData(currentZoneId);
       const card = document.getElementById('viewerCard');
       const imgArea = document.getElementById('imgDisplayArea');
       const toggleBtn = document.getElementById('btnToggleBoss');
       const currentZoneIndex = zones.findIndex(z => z.id === currentZoneId);
 
-      if (data.found) {
+      card.classList.remove('boss-found', 'boss-respawned');
+      toggleBtn.classList.remove('found', 'respawned');
+
+      if (data.respawned) {
+        card.classList.add('boss-respawned');
+        toggleBtn.textContent = t.clearRespawn;
+        toggleBtn.classList.add('respawned');
+      } else if (data.found) {
         card.classList.add('boss-found');
-        toggleBtn.textContent = 'Segna come Mancante';
+        toggleBtn.textContent = t.markMissing;
         toggleBtn.classList.add('found');
+        updateTimerBadgeDisplay(data.expiresAt);
       } else {
-        card.classList.remove('boss-found');
-        toggleBtn.textContent = 'Segna Boss come Trovato';
-        toggleBtn.classList.remove('found');
+        toggleBtn.textContent = t.markFound;
       }
 
       if (data.images && data.images.length > 0) {
@@ -171,13 +306,55 @@
           <img src="${data.images[currentImgIndex]}" 
                alt="Mappa Area" 
                onerror="tryNextFallbackExtension(this)">
-          <div class="photo-counter">Zona ${currentZoneIndex + 1} di ${zones.length} — ${zones[currentZoneIndex].name} (Usa frecce ◄ ►)</div>
+          <div class="photo-counter">${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${zones[currentZoneIndex].name} (◄ ►)</div>
         `;
       } else {
         imgArea.innerHTML = `
-          <div class="placeholder-text">Nessuna foto presente per questa zona.<br>Aggiungi un URL o carica un file dal dispositivo.</div>
-          <div class="photo-counter">Zona ${currentZoneIndex + 1} di ${zones.length} — ${zones[currentZoneIndex].name}</div>
+          <div class="placeholder-text">${t.noPhotos}</div>
+          <div class="photo-counter">${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${zones[currentZoneIndex].name}</div>
         `;
+      }
+    }
+
+    function updateTimerBadgeDisplay(expiresAt) {
+      if (!expiresAt) return;
+      const t = i18n[currentLang];
+      const diff = expiresAt - Date.now();
+      if (diff <= 0) return;
+
+      const totalSec = Math.floor(diff / 1000);
+      const mins = Math.floor(totalSec / 60);
+      const secs = totalSec % 60;
+      const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      
+      document.getElementById('timerDisplay').textContent = `${t.respawnText}: ${formatted}`;
+    }
+
+    function checkAndTickTimers() {
+      const now = Date.now();
+      let stateChanged = false;
+
+      zones.forEach(z => {
+        const data = getZoneData(z.id);
+        if (data.found && data.expiresAt && now >= data.expiresAt) {
+          // Timer scaduto per questa specifica zona!
+          data.found = false;
+          data.expiresAt = null;
+          data.respawned = true; // Imposta lo stato di ricomparsa
+          saveZoneData(z.id, data);
+          stateChanged = true;
+        }
+      });
+
+      if (stateChanged) {
+        populateZoneSelect();
+        renderViewer();
+      } else {
+        // Aggiorna solo il testo del conto alla rovescia corrente se attivo
+        const activeData = getZoneData(currentZoneId);
+        if (activeData.found && activeData.expiresAt) {
+          updateTimerBadgeDisplay(activeData.expiresAt);
+        }
       }
     }
 
@@ -210,7 +387,7 @@
         const imgArea = document.getElementById('imgDisplayArea');
         const errDiv = document.createElement('div');
         errDiv.className = 'placeholder-text error-msg';
-        errDiv.innerHTML = `⚠️ Immagine non trovata nella cartella "img/".<br>Verifica che il file si chiami esattamente con il numero della zona (es. 1.jpg, 2.jpg) dentro la cartella img.`;
+        errDiv.innerHTML = i18n[currentLang].errorPhoto;
         imgArea.prepend(errDiv);
       }
     }
@@ -218,8 +395,9 @@
     function resetDefaultImages() {
       localStorage.clear();
       currentImgIndex = 0;
+      populateZoneSelect();
       renderViewer();
-      alert('Foto predefinite ripristinate!');
+      alert(currentLang === 'it' ? 'Foto e dati ripristinati!' : 'Photos and data reset!');
     }
 
     function changeZone(zoneId) {
@@ -268,8 +446,26 @@
 
     function toggleBossState() {
       const data = getZoneData(currentZoneId);
-      data.found = !data.found;
+
+      if (data.respawned) {
+        // Pressione per azzerare la notifica di avvenuto respawn
+        data.respawned = false;
+        data.found = false;
+        data.expiresAt = null;
+      } else {
+        // Toggle standard tra Trovato / Mancante
+        data.found = !data.found;
+
+        if (data.found) {
+          data.expiresAt = Date.now() + ONE_HOUR_MS;
+          data.respawned = false;
+        } else {
+          data.expiresAt = null;
+        }
+      }
+
       saveZoneData(currentZoneId, data);
+      populateZoneSelect();
       renderViewer();
     }
 
