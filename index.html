@@ -19,6 +19,9 @@
     .lang-btn { background: #0d0e12; color: #f39c12; border: 1px solid #343847; padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.85em; letter-spacing: 1px; }
     .lang-btn:hover { background: #f39c12; color: #000; border-color: #f39c12; }
 
+    /* Contatore spostato fuori e posizionato in alto sopra la mappa */
+    .photo-counter { background: #16181f; color: #9da0a8; padding: 6px 15px; border-radius: 6px; font-size: 0.85em; border: 1px solid #272a36; text-align: center; font-weight: 600; }
+
     .viewer-card { position: relative; background: #12141a; border: 3px solid #272a36; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s ease; }
     
     .img-display-area { position: relative; width: 100%; height: 68vh; min-height: 450px; background: #050507; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: crosshair; }
@@ -49,8 +52,6 @@
     .nav-btn:hover { background: #f39c12; color: #000; border-color: #f39c12; }
     .nav-btn.prev { left: 20px; }
     .nav-btn.next { right: 20px; }
-
-    .photo-counter { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.85); color: #fff; padding: 6px 16px; border-radius: 20px; font-size: 0.85em; z-index: 5; border: 1px solid #444; pointer-events: none; }
 
     .control-panel { padding: 15px 20px; background: #16181f; display: flex; flex-wrap: wrap; gap: 15px; align-items: center; justify-content: space-between; border-top: 1px solid #272a36; z-index: 2; }
     .add-inputs { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; flex: 1; min-width: 300px; }
@@ -93,6 +94,9 @@
         <button class="lang-btn" id="langBtn" onclick="toggleLanguage()">EN</button>
       </div>
     </header>
+
+    <!-- Contatore delle zone/foto spostato qui fuori, sopra la mappa -->
+    <div class="photo-counter" id="photoCounterBar">Caricamento...</div>
 
     <div class="viewer-card" id="viewerCard">
       <div class="found-banner">
@@ -364,6 +368,8 @@
         toggleBtn.textContent = t.markFound;
       }
 
+      // Aggiorna la barra informativa fuori dall'immagine
+      const counterBar = document.getElementById('photoCounterBar');
       if (data.images && data.images.length > 0) {
         if (currentImgIndex >= data.images.length) currentImgIndex = data.images.length - 1;
         if (currentImgIndex < 0) currentImgIndex = 0;
@@ -375,15 +381,15 @@
                  onerror="tryNextFallbackExtension(this)">
             <div id="markersContainer"></div>
           </div>
-          <div class="photo-counter">[${currentZoneObj.region}] ${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${currentZoneObj.name} (◄ ►)</div>
         `;
+        counterBar.textContent = `[${currentZoneObj.region}] ${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${currentZoneObj.name} | Foto ${currentImgIndex + 1}/${data.images.length} (Usa frecce ◄ ►)`;
 
         renderMarkers();
       } else {
         imgArea.innerHTML = `
           <div class="placeholder-text">${t.noPhotos}</div>
-          <div class="photo-counter">[${currentZoneObj.region}] ${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${currentZoneObj.name}</div>
         `;
+        counterBar.textContent = `[${currentZoneObj.region}] ${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${currentZoneObj.name}`;
       }
     }
 
