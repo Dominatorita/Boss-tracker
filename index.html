@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Throne and Liberty - Boss Tracker</title>
+  <title>Throne and Liberty - Boss Tracker & Markers</title>
   <style>
     * { box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #090a0f; color: #e1e3e6; margin: 0; padding: 15px; }
@@ -11,22 +11,28 @@
     header { display: flex; justify-content: space-between; align-items: center; background: #16181f; padding: 12px 20px; border-radius: 8px; border: 1px solid #272a36; flex-wrap: wrap; gap: 10px; }
     h1 { margin: 0; color: #f39c12; font-size: 1.4em; }
     
-    .header-controls { display: flex; align-items: center; gap: 12px; }
-    .zone-selector { display: flex; align-items: center; gap: 8px; }
-    select { background: #0d0e12; color: #fff; border: 1px solid #343847; padding: 8px 12px; border-radius: 6px; font-size: 1em; cursor: pointer; font-weight: bold; max-width: 350px; }
+    .header-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .zone-selector { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    select { background: #0d0e12; color: #fff; border: 1px solid #343847; padding: 8px 12px; border-radius: 6px; font-size: 1em; cursor: pointer; font-weight: bold; }
+    label { font-size: 0.9em; color: #b0b3b8; }
 
     .lang-btn { background: #0d0e12; color: #f39c12; border: 1px solid #343847; padding: 7px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; transition: 0.2s; font-size: 0.85em; letter-spacing: 1px; }
     .lang-btn:hover { background: #f39c12; color: #000; border-color: #f39c12; }
 
     .viewer-card { position: relative; background: #12141a; border: 3px solid #272a36; border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; transition: all 0.3s ease; }
     
-    .img-display-area { position: relative; width: 100%; height: 68vh; min-height: 450px; background: #050507; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-    .img-display-area img { max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; image-rendering: -webkit-optimize-contrast; }
+    .img-display-area { position: relative; width: 100%; height: 68vh; min-height: 450px; background: #050507; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: crosshair; }
     
-    .found-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #041f0c; font-weight: 900; padding: 10px 25px; border-radius: 40px; font-size: 1.3em; letter-spacing: 1px; z-index: 10; box-shadow: 0 0 25px #2ecc71; text-transform: uppercase; border: 2px solid #ffffff; text-align: center; }
+    .img-wrapper { position: relative; display: inline-block; max-width: 100%; max-height: 100%; }
+    .img-display-area img { display: block; max-width: 100%; max-height: 68vh; width: auto; height: auto; object-fit: contain; image-rendering: -webkit-optimize-contrast; user-select: none; }
+    
+    .map-marker { position: absolute; width: 30px; height: 30px; background: #f39c12; color: #000; border: 2px solid #fff; border-radius: 50%; font-weight: 900; font-size: 0.9em; display: flex; align-items: center; justify-content: center; transform: translate(-50%, -50%); cursor: pointer; box-shadow: 0 0 10px rgba(0,0,0,0.8); z-index: 4; transition: transform 0.1s; }
+    .map-marker:hover { transform: translate(-50%, -50%) scale(1.2); background: #e74c3c; color: #fff; }
+
+    .found-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #2ecc71; color: #041f0c; font-weight: 900; padding: 10px 25px; border-radius: 40px; font-size: 1.3em; letter-spacing: 1px; z-index: 10; box-shadow: 0 0 25px #2ecc71; text-transform: uppercase; border: 2px solid #ffffff; text-align: center; pointer-events: none; }
     .found-banner .timer-badge { display: block; font-size: 0.85em; font-family: monospace; font-weight: bold; background: rgba(0,0,0,0.3); color: #ffffff; padding: 3px 12px; border-radius: 12px; margin-top: 4px; letter-spacing: 1px; }
     
-    .respawn-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #e67e22; color: #ffffff; font-weight: 900; padding: 12px 30px; border-radius: 40px; font-size: 1.3em; letter-spacing: 1px; z-index: 10; box-shadow: 0 0 30px #e67e22; text-transform: uppercase; border: 2px solid #ffffff; text-align: center; animation: pulse-glow 1.5s infinite alternate; }
+    .respawn-banner { display: none; position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: #e67e22; color: #ffffff; font-weight: 900; padding: 12px 30px; border-radius: 40px; font-size: 1.3em; letter-spacing: 1px; z-index: 10; box-shadow: 0 0 30px #e67e22; text-transform: uppercase; border: 2px solid #ffffff; text-align: center; animation: pulse-glow 1.5s infinite alternate; pointer-events: none; }
 
     @keyframes pulse-glow {
       0% { transform: translateX(-50%) scale(1); box-shadow: 0 0 20px #e67e22; }
@@ -54,6 +60,8 @@
     .btn:hover { background: #34495e; }
     .btn-reset { background: #d35400; color: #fff; }
     .btn-reset:hover { background: #e67e22; }
+    .btn-clear-markers { background: #c0392b; color: #fff; }
+    .btn-clear-markers:hover { background: #e74c3c; }
     
     .btn-toggle-boss { background: #2ecc71; color: #041f0c; font-size: 0.95em; padding: 9px 18px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; white-space: nowrap; }
     .btn-toggle-boss.found { background: #e74c3c; color: #fff; }
@@ -69,11 +77,17 @@
 
   <div class="container">
     <header>
-      <h1>Boss Area Viewer</h1>
+      <h1>Boss Area Viewer & GPS Markers</h1>
       
       <div class="header-controls">
         <div class="zone-selector">
-          <label for="zoneSelect" id="uiZoneLabel">Seleziona Zona:</label>
+          <label for="regionSelect" id="uiRegionLabel">Regione:</label>
+          <select id="regionSelect" onchange="changeRegion(this.value)">
+            <option value="TALANDRE">Talandre</option>
+            <option value="NIX">Nix</option>
+          </select>
+
+          <label for="zoneSelect" id="uiZoneLabel">Zona:</label>
           <select id="zoneSelect" onchange="changeZone(this.value)"></select>
         </div>
         <button class="lang-btn" id="langBtn" onclick="toggleLanguage()">EN</button>
@@ -107,8 +121,9 @@
         </div>
 
         <div style="display:flex; gap:10px; flex-wrap: wrap;">
-          <button class="btn btn-reset" id="uiResetBtn" onclick="resetDefaultImages()">Ripristina Foto Predefinite</button>
+          <button class="btn btn-clear-markers" id="uiClearMarkersBtn" onclick="clearCurrentMarkers()">Pulisci Marker</button>
           <button class="btn btn-delete" id="uiDeleteBtn" onclick="deleteCurrentImage()">Elimina Foto</button>
+          <button class="btn btn-reset" id="uiResetBtn" onclick="resetDefaultImages()">Ripristina</button>
           <button class="btn-toggle-boss" id="btnToggleBoss" onclick="toggleBossState()">Segna come Trovato</button>
         </div>
       </div>
@@ -116,11 +131,12 @@
   </div>
 
   <script>
-    const STORAGE_PREFIX = 'bt_';
+    const STORAGE_PREFIX = 'bt_markers_';
 
     const i18n = {
       it: {
-        zoneLabel: "Seleziona Zona:",
+        regionLabel: "Regione:",
+        zoneLabel: "Zona:",
         foundBanner: "Boss Trovato In Questa Zona ✓",
         respawnBannerText: "🔔 Boss Ricomparso in questa zona!",
         respawnText: "Respawn in",
@@ -131,16 +147,18 @@
         addUrlBtn: "Aggiungi URL",
         orText: "o",
         uploadFileBtn: "Carica File",
-        resetBtn: "Ripristina Foto Predefinite",
+        resetBtn: "Ripristina",
         deleteBtn: "Elimina Foto",
+        clearMarkersBtn: "Pulisci Marker",
         noPhotos: "Nessuna foto presente per questa zona.<br>Aggiungi un URL o carica un file dal dispositivo.",
-        errorPhoto: "⚠️ Immagine non trovata nella cartella \"img/\".<br>Verifica che il file si chiami esattamente con il numero della zona (es. 1.jpg, 2.jpg) dentro la cartella img.",
+        errorPhoto: "⚠️ Immagine non trovata nella cartella \"img/\".",
         zoneWord: "Zona",
         ofWord: "di",
         langBtnText: "EN"
       },
       en: {
-        zoneLabel: "Select Zone:",
+        regionLabel: "Region:",
+        zoneLabel: "Zone:",
         foundBanner: "Boss Found In This Zone ✓",
         respawnBannerText: "🔔 Boss Respawned in this zone!",
         respawnText: "Respawn in",
@@ -151,10 +169,11 @@
         addUrlBtn: "Add URL",
         orText: "or",
         uploadFileBtn: "Upload File",
-        resetBtn: "Reset Default Photos",
+        resetBtn: "Reset",
         deleteBtn: "Delete Photo",
+        clearMarkersBtn: "Clear Markers",
         noPhotos: "No photos available for this zone.<br>Add an image URL or upload a file.",
-        errorPhoto: "⚠️ Image not found in \"img/\" folder.<br>Verify that the file is named with the zone number (e.g. 1.jpg, 2.jpg) inside the img folder.",
+        errorPhoto: "⚠️ Image not found in \"img/\" folder.",
         zoneWord: "Zone",
         ofWord: "of",
         langBtnText: "IT"
@@ -162,31 +181,40 @@
     };
 
     const zonesList = [
-      { num: 1, name: '1. Akidu Valley' },
-      { num: 2, name: '2. Manawastes' },
-      { num: 3, name: '3. Daybreak Shore' },
-      { num: 4, name: '4. The Raging Wilds' },
-      { num: 5, name: '5. Abandoned Stonemason Town' },
-      { num: 6, name: '6. Monolith Wastelands' },
-      { num: 7, name: '7. Sandworm Lair' },
-      { num: 8, name: '8. Nesting Grounds' },
-      { num: 9, name: '9. Urstella Fields' },
-      { num: 10, name: '10. Carmine Forest' },
-      { num: 11, name: '11. Shattered Temple' },
-      { num: 12, name: '12. Ruins of Turayne' },
-      { num: 13, name: '13. Fonos Basin' },
-      { num: 14, name: '14. Swamp of Silence' },
-      { num: 15, name: '15. Black Anvil Forge' },
-      { num: 16, name: '16. Crimson Mansion' },
-      { num: 17, name: '17. Bercant Manor' },
-      { num: 18, name: "18. Quietis's Demesne" },
-      { num: 19, name: '19. Grayclaw Forest' }
+      // REGIONE: TALANDRE (1 - 19)
+      { num: 1, name: '1. Akidu Valley', region: 'TALANDRE' },
+      { num: 2, name: '2. Manawastes', region: 'TALANDRE' },
+      { num: 3, name: '3. Daybreak Shore', region: 'TALANDRE' },
+      { num: 4, name: '4. The Raging Wilds', region: 'TALANDRE' },
+      { num: 5, name: '5. Abandoned Stonemason Town', region: 'TALANDRE' },
+      { num: 6, name: '6. Monolith Wastelands', region: 'TALANDRE' },
+      { num: 7, name: '7. Sandworm Lair', region: 'TALANDRE' },
+      { num: 8, name: '8. Nesting Grounds', region: 'TALANDRE' },
+      { num: 9, name: '9. Urstella Fields', region: 'TALANDRE' },
+      { num: 10, name: '10. Carmine Forest', region: 'TALANDRE' },
+      { num: 11, name: '11. Shattered Temple', region: 'TALANDRE' },
+      { num: 12, name: '12. Ruins of Turayne', region: 'TALANDRE' },
+      { num: 13, name: '13. Fonos Basin', region: 'TALANDRE' },
+      { num: 14, name: '14. Swamp of Silence', region: 'TALANDRE' },
+      { num: 15, name: '15. Black Anvil Forge', region: 'TALANDRE' },
+      { num: 16, name: '16. Crimson Mansion', region: 'TALANDRE' },
+      { num: 17, name: '17. Bercant Manor', region: 'TALANDRE' },
+      { num: 18, name: "18. Quietis's Demesne", region: 'TALANDRE' },
+      { num: 19, name: '19. Grayclaw Forest', region: 'TALANDRE' },
+
+      // REGIONE: NIX (20 - 24)
+      { num: 20, name: '20. Sailor Sorrel', region: 'NIX' },
+      { num: 21, name: '21. Frosteye Watcher', region: 'NIX' },
+      { num: 22, name: '22. Knight Capitan Ranvier', region: 'NIX' },
+      { num: 23, name: '23. Mutant Beast', region: 'NIX' },
+      { num: 24, name: '24. Taurk Fighter', region: 'NIX' }
     ];
 
     const zones = zonesList.map(z => ({
       id: `zone_${z.num}`,
       name: z.name,
       num: z.num,
+      region: z.region,
       defaultImages: [
         `img/${z.num}.jpg`,
         `img/${z.num}.png`,
@@ -195,6 +223,7 @@
       ]
     }));
 
+    let currentRegion = 'TALANDRE';
     let currentZoneId = zones[0].id;
     let currentImgIndex = 0;
     let currentLang = localStorage.getItem(STORAGE_PREFIX + 'lang') || 'it';
@@ -202,6 +231,7 @@
 
     function init() {
       updateLanguageUI();
+      populateRegionSelect();
       populateZoneSelect();
       renderViewer();
 
@@ -218,12 +248,12 @@
       currentLang = currentLang === 'it' ? 'en' : 'it';
       localStorage.setItem(STORAGE_PREFIX + 'lang', currentLang);
       updateLanguageUI();
-      populateZoneSelect();
       renderViewer();
     }
 
     function updateLanguageUI() {
       const t = i18n[currentLang];
+      document.getElementById('uiRegionLabel').textContent = t.regionLabel;
       document.getElementById('uiZoneLabel').textContent = t.zoneLabel;
       document.getElementById('uiFoundText').textContent = t.foundBanner;
       document.getElementById('uiRespawnBanner').textContent = t.respawnBannerText;
@@ -233,6 +263,7 @@
       document.getElementById('uiUploadFileBtn').textContent = t.uploadFileBtn;
       document.getElementById('uiResetBtn').textContent = t.resetBtn;
       document.getElementById('uiDeleteBtn').textContent = t.deleteBtn;
+      document.getElementById('uiClearMarkersBtn').textContent = t.clearMarkersBtn;
       document.getElementById('langBtn').textContent = t.langBtnText;
     }
 
@@ -241,18 +272,31 @@
       if (saved) return JSON.parse(saved);
 
       const zoneObj = zones.find(z => z.id === zoneId);
-      return { images: [...zoneObj.defaultImages], found: false, expiresAt: null, respawned: false };
+      return { 
+        images: [...zoneObj.defaultImages], 
+        markers: {}, 
+        found: false, 
+        expiresAt: null, 
+        respawned: false 
+      };
     }
 
     function saveZoneData(zoneId, data) {
       localStorage.setItem(STORAGE_PREFIX + zoneId, JSON.stringify(data));
     }
 
+    function populateRegionSelect() {
+      const regSelect = document.getElementById('regionSelect');
+      regSelect.value = currentRegion;
+    }
+
     function populateZoneSelect() {
       const select = document.getElementById('zoneSelect');
       const now = Date.now();
 
-      select.innerHTML = zones.map(z => {
+      const filteredZones = zones.filter(z => z.region === currentRegion);
+
+      select.innerHTML = filteredZones.map(z => {
         const data = getZoneData(z.id);
         let statusBadge = "";
 
@@ -272,6 +316,23 @@
       select.value = currentZoneId;
     }
 
+    function changeRegion(reg) {
+      currentRegion = reg;
+      const firstZoneInReg = zones.find(z => z.region === currentRegion);
+      if (firstZoneInReg) {
+        currentZoneId = firstZoneInReg.id;
+      }
+      populateZoneSelect();
+      currentImgIndex = 0;
+      renderViewer();
+    }
+
+    function changeZone(zoneId) {
+      currentZoneId = zoneId;
+      currentImgIndex = 0;
+      renderViewer();
+    }
+
     function renderViewer() {
       const t = i18n[currentLang];
       const data = getZoneData(currentZoneId);
@@ -279,6 +340,13 @@
       const imgArea = document.getElementById('imgDisplayArea');
       const toggleBtn = document.getElementById('btnToggleBoss');
       const currentZoneIndex = zones.findIndex(z => z.id === currentZoneId);
+      const currentZoneObj = zones[currentZoneIndex];
+
+      if (currentZoneObj && currentZoneObj.region !== currentRegion) {
+        currentRegion = currentZoneObj.region;
+        document.getElementById('regionSelect').value = currentRegion;
+        populateZoneSelect();
+      }
 
       card.classList.remove('boss-found', 'boss-respawned');
       toggleBtn.classList.remove('found', 'respawned');
@@ -301,16 +369,82 @@
         if (currentImgIndex < 0) currentImgIndex = 0;
 
         imgArea.innerHTML = `
-          <img src="${data.images[currentImgIndex]}" 
-               alt="Mappa Area" 
-               onerror="tryNextFallbackExtension(this)">
-          <div class="photo-counter">${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${zones[currentZoneIndex].name} (◄ ►)</div>
+          <div class="img-wrapper" id="imgWrapper" onclick="handleImageClick(event)">
+            <img src="${data.images[currentImgIndex]}" 
+                 alt="Mappa Area" 
+                 onerror="tryNextFallbackExtension(this)">
+            <div id="markersContainer"></div>
+          </div>
+          <div class="photo-counter">[${currentZoneObj.region}] ${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${currentZoneObj.name} (◄ ►)</div>
         `;
+
+        renderMarkers();
       } else {
         imgArea.innerHTML = `
           <div class="placeholder-text">${t.noPhotos}</div>
-          <div class="photo-counter">${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${zones[currentZoneIndex].name}</div>
+          <div class="photo-counter">[${currentZoneObj.region}] ${t.zoneWord} ${currentZoneIndex + 1} ${t.ofWord} ${zones.length} — ${currentZoneObj.name}</div>
         `;
+      }
+    }
+
+    function renderMarkers() {
+      const data = getZoneData(currentZoneId);
+      if (!data.markers) data.markers = {};
+      const photoMarkers = data.markers[currentImgIndex] || [];
+      const container = document.getElementById('markersContainer');
+      if (!container) return;
+
+      container.innerHTML = '';
+
+      photoMarkers.forEach((m, idx) => {
+        const markerElem = document.createElement('div');
+        markerElem.className = 'map-marker';
+        markerElem.style.left = `${m.x}%`;
+        markerElem.style.top = `${m.y}%`;
+        markerElem.textContent = idx + 1;
+        markerElem.title = `Marker #${idx + 1}`;
+        
+        markerElem.onclick = function(e) {
+          e.stopPropagation();
+          photoMarkers.splice(idx, 1);
+          data.markers[currentImgIndex] = photoMarkers;
+          saveZoneData(currentZoneId, data);
+          renderMarkers();
+        };
+
+        container.appendChild(markerElem);
+      });
+    }
+
+    function handleImageClick(e) {
+      const wrapper = document.getElementById('imgWrapper');
+      const img = wrapper.querySelector('img');
+      if (!img) return;
+
+      const rect = img.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickY = e.clientY - rect.top;
+
+      if (clickX < 0 || clickX > rect.width || clickY < 0 || clickY > rect.height) return;
+
+      const xPercent = (clickX / rect.width) * 100;
+      const yPercent = (clickY / rect.height) * 100;
+
+      const data = getZoneData(currentZoneId);
+      if (!data.markers) data.markers = {};
+      if (!data.markers[currentImgIndex]) data.markers[currentImgIndex] = [];
+
+      data.markers[currentImgIndex].push({ x: xPercent, y: yPercent });
+      saveZoneData(currentZoneId, data);
+      renderMarkers();
+    }
+
+    function clearCurrentMarkers() {
+      const data = getZoneData(currentZoneId);
+      if (data.markers && data.markers[currentImgIndex]) {
+        data.markers[currentImgIndex] = [];
+        saveZoneData(currentZoneId, data);
+        renderMarkers();
       }
     }
 
@@ -358,7 +492,9 @@
       const currentIndex = zones.findIndex(z => z.id === currentZoneId);
       const newIndex = (currentIndex - 1 + zones.length) % zones.length;
       currentZoneId = zones[newIndex].id;
-      document.getElementById('zoneSelect').value = currentZoneId;
+      currentRegion = zones[newIndex].region;
+      document.getElementById('regionSelect').value = currentRegion;
+      populateZoneSelect();
       currentImgIndex = 0;
       renderViewer();
     }
@@ -367,7 +503,9 @@
       const currentIndex = zones.findIndex(z => z.id === currentZoneId);
       const newIndex = (currentIndex + 1) % zones.length;
       currentZoneId = zones[newIndex].id;
-      document.getElementById('zoneSelect').value = currentZoneId;
+      currentRegion = zones[newIndex].region;
+      document.getElementById('regionSelect').value = currentRegion;
+      populateZoneSelect();
       currentImgIndex = 0;
       renderViewer();
     }
@@ -397,13 +535,7 @@
       currentImgIndex = 0;
       populateZoneSelect();
       renderViewer();
-      alert(currentLang === 'it' ? 'Dati della mappa ripristinati!' : 'Map data reset!');
-    }
-
-    function changeZone(zoneId) {
-      currentZoneId = zoneId;
-      currentImgIndex = 0;
-      renderViewer();
+      alert(currentLang === 'it' ? 'Dati e marker ripristinati!' : 'Data and markers reset!');
     }
 
     function addUrlImage() {
@@ -440,6 +572,10 @@
       if (data.images.length === 0) return;
 
       data.images.splice(currentImgIndex, 1);
+      if (data.markers) {
+        delete data.markers[currentImgIndex];
+      }
+
       saveZoneData(currentZoneId, data);
       renderViewer();
     }
